@@ -54,84 +54,61 @@ yellow_mask=cv2.inRange(hsv,lower_yellow,upper_yellow)
 lower_white=np.array([0,0,200])
 upper_white=np.array([180,40,255])
 white_mask=cv2.inRange(hsv,lower_white,upper_white)
+#ab casuality detection
 
+colors=[("Red",red_mask,3),("Yellow",yellow_mask,2),("White",white_mask,1)]
 
-contours,hierarchy=cv2.findContours(red_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+casualties=[]
 
-for cnt in contours:
-    area=cv2.contourArea(cnt)
-    if area<100:
-        continue
-    M=cv2.moments(cnt)
-    if M["m00"]!=0:
+for color_name,mask,severity_score in colors:
+    contours,hierarchy=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        area=cv2.contourArea(cnt)
+        if area<100:
+            continue
+        M=cv2.moments(cnt)
+        if M["m00"]==0:
+            continue
         cx=int(M["m10"]/M["m00"])
         cy=int(M["m01"]/M["m00"])
-    peri=cv2.arcLength(cnt,True)
-    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
-    corners=len(approx)
-    hull=cv2.convexHull(cnt)
-    hull_area=cv2.contourArea(hull)
-    solidity=area/hull_area
-    
-    if corners==4:
-        shape="square"
-    elif solidity<0.85:
-        shape="star"
-    else:
-        shape="circle"
-    
-    print("red",shape,"-",(cx,cy))
+        peri=cv2.arcLength(cnt,True)
+        approx=cv2.approxPolyDP(cnt,0.02*peri,True)
+        corners=len(approx)
+        hull=cv2.convexHull(cnt)
+        hull_area=cv2.contourArea(hull)
+        solidity=area/hull_area
+        
+        if corners==4:
+            shape="square"
+            age_score=2
+        elif solidity<0.85:
+            shape="star"
+            age_score=1
+        else:
+            shape="circle"
+            age_score=3
+        
+        px,py=approx[0][0]
+        dx=px-cx
+        dy=py-cy
+        nx=px+dx+1
+        ny=py+dy+1
+        if light_mask[ny,nx]==255:
+            level= 0
+        elif med_mask[ny,nx]==255:
+            level= 1
+        elif dark_mask[ny,nx]==255:
+            level= 2
+        else:
+            level= -1
+        
+        priority_score=severity_score*age_score
+        
+        casualties.append({"color":color_name,"shape":shape,"coords":(cx,cy),"level":level,"priority":priority_score})
 
-contours,hierarchy=cv2.findContours(yellow_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+for c in casualties:
+    print(c.values())
 
-for cnt in contours:
-    area=cv2.contourArea(cnt)
-    if area<100:
-        continue
-    M=cv2.moments(cnt)
-    if M["m00"]!=0:
-        cx=int(M["m10"]/M["m00"])
-        cy=int(M["m01"]/M["m00"])
-    peri=cv2.arcLength(cnt,True)
-    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
-    corners=len(approx)
-    hull=cv2.convexHull(cnt)
-    hull_area=cv2.contourArea(hull)
-    solidity=area/hull_area
-    
-    if corners==4:
-        shape="square"
-    elif solidity<0.85:
-        shape="star"
-    else:
-        shape="circle"
-    
-    print("yellow",shape,"-",(cx,cy))
 
-contours,hierarchy=cv2.findContours(white_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
-for cnt in contours:
-    area=cv2.contourArea(cnt)
-    if area<100:
-        continue
-    M=cv2.moments(cnt)
-    if M["m00"]!=0:
-        cx=int(M["m10"]/M["m00"])
-        cy=int(M["m01"]/M["m00"])
-    peri=cv2.arcLength(cnt,True)
-    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
-    corners=len(approx)
-    hull=cv2.convexHull(cnt)
-    hull_area=cv2.contourArea(hull)
-    solidity=area/hull_area
-    
-    if corners==4:
-        shape="square"
-    elif solidity<0.85:
-        shape="star"
-    else:
-        shape="circle"
-    
-    print("white",shape,"-",(cx,cy))
 
 
