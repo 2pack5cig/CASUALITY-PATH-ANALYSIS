@@ -80,7 +80,7 @@ for cnt in contours:
     else:
         shape="circle"
     
-    print("red",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+    print("red",shape,"-",(cx,cy))
 
 contours,hierarchy=cv2.findContours(yellow_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -106,7 +106,7 @@ for cnt in contours:
     else:
         shape="circle"
     
-    print("yellow",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+    print("yellow",shape,"-",(cx,cy))
 
 contours,hierarchy=cv2.findContours(white_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -132,6 +132,6 @@ for cnt in contours:
     else:
         shape="circle"
     
-    print("white",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+    print("white",shape,"-",(cx,cy))
 
 
