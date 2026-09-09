@@ -35,3 +35,103 @@ plt.title("Final")
 plt.axis('on')
 plt.savefig('outputs/mask_output.png')
 plt.show()
+
+#now casuality detection
+lower_red1=np.array([0,100,100])
+upper_red1=np.array([10,255,255])
+mask_red1=cv2.inRange(hsv,lower_red1,upper_red1)
+
+lower_red2=np.array([170,100,100])
+upper_red2=np.array([180,255,255])
+mask_red2=cv2.inRange(hsv,lower_red2,upper_red2)
+
+red_mask=cv2.bitwise_or(mask_red1,mask_red2)
+
+lower_yellow=np.array([20,100,100])
+upper_yellow=np.array([34,250,255])
+yellow_mask=cv2.inRange(hsv,lower_yellow,upper_yellow)
+
+lower_white=np.array([0,0,200])
+upper_white=np.array([180,40,255])
+white_mask=cv2.inRange(hsv,lower_white,upper_white)
+
+
+contours,hierarchy=cv2.findContours(red_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+for cnt in contours:
+    area=cv2.contourArea(cnt)
+    if area<100:
+        continue
+    M=cv2.moments(cnt)
+    if M["m00"]!=0:
+        cx=int(M["m10"]/M["m00"])
+        cy=int(M["m01"]/M["m00"])
+    peri=cv2.arcLength(cnt,True)
+    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
+    corners=len(approx)
+    hull=cv2.convexHull(cnt)
+    hull_area=cv2.contourArea(hull)
+    solidity=area/hull_area
+    
+    if corners==4:
+        shape="square"
+    elif solidity<0.85:
+        shape="star"
+    else:
+        shape="circle"
+    
+    print("red",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+
+contours,hierarchy=cv2.findContours(yellow_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+for cnt in contours:
+    area=cv2.contourArea(cnt)
+    if area<100:
+        continue
+    M=cv2.moments(cnt)
+    if M["m00"]!=0:
+        cx=int(M["m10"]/M["m00"])
+        cy=int(M["m01"]/M["m00"])
+    peri=cv2.arcLength(cnt,True)
+    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
+    corners=len(approx)
+    hull=cv2.convexHull(cnt)
+    hull_area=cv2.contourArea(hull)
+    solidity=area/hull_area
+    
+    if corners==4:
+        shape="square"
+    elif solidity<0.85:
+        shape="star"
+    else:
+        shape="circle"
+    
+    print("yellow",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+
+contours,hierarchy=cv2.findContours(white_mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+for cnt in contours:
+    area=cv2.contourArea(cnt)
+    if area<100:
+        continue
+    M=cv2.moments(cnt)
+    if M["m00"]!=0:
+        cx=int(M["m10"]/M["m00"])
+        cy=int(M["m01"]/M["m00"])
+    peri=cv2.arcLength(cnt,True)
+    approx=cv2.approxPolyDP(cnt,0.02*peri,True)
+    corners=len(approx)
+    hull=cv2.convexHull(cnt)
+    hull_area=cv2.contourArea(hull)
+    solidity=area/hull_area
+    
+    if corners==4:
+        shape="square"
+    elif solidity<0.85:
+        shape="star"
+    else:
+        shape="circle"
+    
+    print("white",shape,"-",(cx,cy),"| corners:",corners,"| solidity:",round(solidity,2))
+
+
